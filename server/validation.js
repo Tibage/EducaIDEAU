@@ -1,15 +1,15 @@
 const categories = new Set([
-  "Legado Educacional",
-  "Mestre do Engajamento",
-  "Tecnologia com Propósito",
-  "Impacto Social e Inclusão",
+  "Prêmio Sempre Professor(a)",
+  "Prêmio Inspiração",
+  "Prêmio Inovação",
+  "Prêmio Inclusão Social",
 ]);
 
 export function validateIndication(input) {
   const data = input || {};
   const errors = {};
 
-  validateText(errors, data.nome, "nome", "Nome do indicado", 3, 120);
+  validateText(errors, data.nome, "nome", "Nome do inscrito ou indicado", 3, 120);
   validateText(errors, data.categoria, "categoria", "Categoria", 3, 80);
   validateText(errors, data.autor, "autor", "Seu nome", 3, 120);
   validateText(errors, data.motivo, "motivo", "Motivo", 40, 1800);

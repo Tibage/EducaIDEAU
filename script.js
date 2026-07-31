@@ -1,38 +1,38 @@
 const categories = {
   legado: {
     number: "01",
-    title: "Legado Educacional",
+    title: "Prêmio Sempre Professor(a)",
     text:
-      "Honra ao mérito para professores com décadas de dedicação e história na educação de Bagé e região.",
-    seek: "O que se busca: trajetória, memória, serviço e inspiração.",
+      "Educador(a) com trajetória histórica de dedicação à educação.",
+    seek: "O que se busca: trajetória, dedicação, serviço e inspiração.",
   },
   engajamento: {
     number: "02",
-    title: "Mestre do Engajamento",
+    title: "Prêmio Inspiração",
     text:
-      "Professores que tornam o aprendizado agradável, lúdico, estimulante e conectado ao prazer de descobrir.",
-    seek: "O que se busca: métodos vivos, vínculo com alunos e combate ao desinteresse escolar.",
+      "Professor(a) que cria métodos para tornar o aprendizado agradável e estimulante.",
+    seek: "O que se busca: métodos vivos, vínculo com alunos e prazer em aprender.",
   },
   tecnologia: {
     number: "03",
-    title: "Tecnologia com Propósito",
+    title: "Prêmio Inovação",
     text:
-      "Uso ético e inteligente de IA, gamificação, AVA e recursos digitais com metodologia pedagógica clara.",
-    seek: "O que se busca: inovação com resultado prático, intencionalidade e impacto mensurável.",
+      "Uso inteligente de ferramentas digitais, IA, ambientes virtuais e gamificação com metodologia clara.",
+    seek: "O que se busca: inovação com resultados práticos no aprendizado.",
   },
   inclusao: {
     number: "04",
-    title: "Impacto Social e Inclusão",
+    title: "Prêmio Inclusão Social",
     text:
-      "Projetos que promovem acessibilidade e integração de estudantes em situação de vulnerabilidade.",
+      "Projetos que promovem a acessibilidade e a integração de alunos em situação de vulnerabilidade.",
     seek: "O que se busca: barreiras rompidas, pertencimento e transformação social.",
   },
 };
 
 const timeline = [
-  "Lançamento oficial em maio, com divulgação do prêmio e abertura do formulário digital.",
-  "Recebimento das indicações da comunidade, instituições e profissionais, com triagem inicial.",
-  "Avaliação do júri técnico, revelação dos vencedores e cerimônia de entrega dos troféus em junho.",
+  "Lançamento oficial em junho, com divulgação do prêmio e abertura do formulário digital.",
+  "Inscrições abertas de junho a setembro, por autoinscrição ou indicação através do site.",
+  "Cerimônia em 15 de outubro de 2026, com noite especial para celebrar histórias inspiradoras.",
 ];
 
 const header = document.querySelector("[data-header]");
@@ -54,6 +54,10 @@ let smoothScrollTarget = window.scrollY;
 
 function setHeaderState() {
   header.classList.toggle("scrolled", window.scrollY > 24);
+}
+
+function getHeaderOffset() {
+  return Math.ceil(header.getBoundingClientRect().height + 18);
 }
 
 function setCategory(key) {
@@ -133,7 +137,7 @@ nav.addEventListener("click", (event) => {
     const target = document.querySelector(event.target.getAttribute("href"));
     if (target) {
       event.preventDefault();
-      const top = target.getBoundingClientRect().top + window.scrollY - 82;
+      const top = target.getBoundingClientRect().top + window.scrollY - getHeaderOffset();
       smoothScrollTarget = top;
       animateScrollTo(top);
       history.pushState(null, "", event.target.getAttribute("href"));
@@ -151,7 +155,7 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
     const target = document.querySelector(link.getAttribute("href"));
     if (!target) return;
     event.preventDefault();
-    const top = target.getBoundingClientRect().top + window.scrollY - 82;
+    const top = target.getBoundingClientRect().top + window.scrollY - getHeaderOffset();
     smoothScrollTarget = top;
     animateScrollTo(top);
     history.pushState(null, "", link.getAttribute("href"));
@@ -170,7 +174,7 @@ form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(form).entries());
 
-  setFormState("sending", "Enviando indicação...");
+  setFormState("sending", "Enviando inscrição...");
 
   try {
     const response = await fetch("/api/indicacoes", {
@@ -182,18 +186,18 @@ form.addEventListener("submit", async (event) => {
 
     if (!response.ok || !result.ok) {
       const details = result.fields ? Object.values(result.fields).join(" ") : result.error;
-      throw new Error(details || "Não foi possível enviar a indicação.");
+      throw new Error(details || "Não foi possível enviar a inscrição.");
     }
 
-    setFormState("success", `Indicação recebida com sucesso. Protocolo: ${result.id}`);
+    setFormState("success", `Inscrição recebida com sucesso. Protocolo: ${result.id}`);
     form.reset();
   } catch (error) {
-    const subject = encodeURIComponent(`Indicação - Prêmio IDEAU 2026 - ${data.nome}`);
+    const subject = encodeURIComponent(`Inscrição - Prêmio IDEAU 2026 - ${data.nome}`);
     const body = encodeURIComponent(
       [
-        `Nome do indicado: ${data.nome}`,
+        `Nome do inscrito ou indicado: ${data.nome}`,
         `Categoria: ${data.categoria}`,
-        `Indicado por: ${data.autor}`,
+        `Preenchido por: ${data.autor}`,
         `E-mail: ${data.email || ""}`,
         `Telefone: ${data.telefone || ""}`,
         `Instituição: ${data.instituicao || ""}`,
@@ -216,7 +220,7 @@ function setFormState(type, message) {
   formStatus.className = `form-status ${type}`;
   formStatus.innerHTML = message;
   submitButton.disabled = type === "sending";
-  submitButton.textContent = type === "sending" ? "Enviando..." : "Enviar indicação";
+  submitButton.textContent = type === "sending" ? "Enviando..." : "Enviar inscrição";
 }
 
 const revealObserver = new IntersectionObserver(

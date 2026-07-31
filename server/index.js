@@ -4,17 +4,17 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import { createClient } from "@supabase/supabase-js";
 import { JsonFallbackStore } from "./jsonFallbackStore.js";
+import { PostgresStore } from "./postgresStore.js";
 import { validateIndication, normalizeIndication } from "./validation.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
-const tableName = process.env.SUPABASE_INDICACOES_TABLE || "indicacoes";
+const tableName = process.env.DATABASE_INDICACOES_TABLE || "indicacoes";
 const publicBaseUrl = process.env.PUBLIC_BASE_URL || `http://localhost:${port}`;
 const adminToken = process.env.ADMIN_TOKEN || "";
 const localStore = new JsonFallbackStore("data/indicacoes.json");
-const supabase = createSupabaseClient();
+const postgresStore = createPostgresStore();
 const rateLimitBucket = new Map();
 
 app.set("trust proxy", 1);
@@ -32,7 +32,7 @@ app.get("/script.js", (_request, response) => response.sendFile("script.js", { r
 app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
-    storage: supabase ? "supabase" : "local-json",
+    storage: postgresStore ? "neon-postgres" : "local-json",
     baseUrl: publicBaseUrl,
   });
 });
@@ -68,8 +68,8 @@ app.post("/api/indicacoes", async (request, response, next) => {
       ok: true,
       id: saved.id,
       status: saved.status,
-      storage: supabase ? "supabase" : "local-json",
-      message: "Indicação recebida com sucesso.",
+      storage: postgresStore ? "neon-postgres" : "local-json",
+      message: "Inscrição recebida com sucesso.",
     });
   } catch (error) {
     next(error);
@@ -128,19 +128,14 @@ app.use((error, _request, response, _next) => {
 
 app.listen(port, () => {
   console.log(`Prêmio IDEAU rodando em ${publicBaseUrl}`);
-  console.log(`Persistência: ${supabase ? "Supabase" : "JSON local"}`);
+  console.log(`Persistência: ${postgresStore ? "Neon/Postgres" : "JSON local"}`);
 });
 
-function createSupabaseClient() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-
-  return createClient(url, key, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
+function createPostgresStore() {
+  if (!process.env.DATABASE_URL) return null;
+  return new PostgresStore({
+    connectionString: process.env.DATABASE_URL,
+    tableName,
   });
 }
 
@@ -184,35 +179,18 @@ function hashIp(ip) {
 }
 
 async function saveIndication(indication) {
-  if (!supabase) return localStore.insert(indication);
-
-  const { data, error } = await supabase.from(tableName).insert(indication).select().single();
-  if (error) throw error;
-  return data;
+  if (!postgresStore) return localStore.insert(indication);
+  return postgresStore.insert(indication);
 }
 
 async function listIndications(status) {
-  if (!supabase) return localStore.list(status);
-
-  let query = supabase.from(tableName).select("*").order("created_at", { ascending: false });
-  if (status) query = query.eq("status", status);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data;
+  if (!postgresStore) return localStore.list(status);
+  return postgresStore.list(status);
 }
 
 async function updateIndicationStatus(id, status) {
-  if (!supabase) return localStore.updateStatus(id, status);
-
-  const { data, error } = await supabase
-    .from(tableName)
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  if (!postgresStore) return localStore.updateStatus(id, status);
+  return postgresStore.updateStatus(id, status);
 }
 
 function toCsv(rows) {

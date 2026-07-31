@@ -1,6 +1,3 @@
--- Schema PostgreSQL compatível com Neon.
--- O mesmo conteúdo também está em neon/schema.sql.
-
 create extension if not exists pgcrypto;
 
 create table if not exists indicacoes (
