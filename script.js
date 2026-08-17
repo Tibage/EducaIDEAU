@@ -30,9 +30,9 @@ const categories = {
 };
 
 const timeline = [
-  "Lançamento oficial em junho, com divulgação do prêmio e abertura do formulário digital.",
-  "Inscrições abertas de junho a setembro, por autoinscrição ou indicação através do site.",
-  "Cerimônia em 15 de outubro de 2026, com noite especial para celebrar histórias inspiradoras.",
+  "Lançamento oficial em 24 de agosto, com divulgação do prêmio e abertura do formulário digital.",
+  "Inscrições abertas de agosto a setembro, por autoinscrição ou indicação através do site.",
+  "Cerimônia em 22 de outubro de 2026, com noite especial para celebrar histórias inspiradoras.",
 ];
 
 const header = document.querySelector("[data-header]");
@@ -47,7 +47,6 @@ const formStatus = document.querySelector("[data-form-status]");
 const submitButton = document.querySelector("[data-submit-button]");
 const hero = document.querySelector(".hero");
 const floatCard = document.querySelector("[data-float-card]");
-const magneticItems = document.querySelectorAll(".magnetic");
 const scrollProgress = document.querySelector("[data-scroll-progress]");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let smoothScrollTarget = window.scrollY;
@@ -124,7 +123,11 @@ function setTimeline(index) {
   timelineButtons.forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.step) === index);
   });
-  timelineDetail.textContent = timeline[index];
+  timelineDetail.classList.add("switching");
+  window.setTimeout(() => {
+    timelineDetail.textContent = timeline[index];
+    timelineDetail.classList.remove("switching");
+  }, 180);
 }
 
 menuButton.addEventListener("click", () => {
@@ -245,34 +248,6 @@ document.querySelectorAll(".reveal").forEach((element) => {
 window.addEventListener("scroll", setHeaderState, { passive: true });
 window.addEventListener("scroll", moveHeroElements, { passive: true });
 window.addEventListener("scroll", updateScrollProgress, { passive: true });
-
-if (!reducedMotion && hero && floatCard) {
-  hero.addEventListener("mousemove", (event) => {
-    const rect = hero.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width - 0.5;
-    const y = (event.clientY - rect.top) / rect.height - 0.5;
-    floatCard.style.transform = `rotateY(${x * 10}deg) rotateX(${y * -10}deg) translateY(${y * -8}px)`;
-  });
-
-  hero.addEventListener("mouseleave", () => {
-    floatCard.style.transform = "";
-  });
-}
-
-if (!reducedMotion) {
-  magneticItems.forEach((item) => {
-    item.addEventListener("mousemove", (event) => {
-      const rect = item.getBoundingClientRect();
-      const x = event.clientX - rect.left - rect.width / 2;
-      const y = event.clientY - rect.top - rect.height / 2;
-      item.style.transform = `translate(${x * 0.12}px, ${y * 0.18}px)`;
-    });
-
-    item.addEventListener("mouseleave", () => {
-      item.style.transform = "";
-    });
-  });
-}
 
 setHeaderState();
 moveHeroElements();
