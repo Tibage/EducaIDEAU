@@ -141,9 +141,11 @@ if (isDirectRun) {
 }
 
 function createDatabaseStore() {
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  if (supabaseUrl && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return new SupabaseStore({
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      url: supabaseUrl,
       serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
       tableName,
     });
