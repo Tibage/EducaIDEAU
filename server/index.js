@@ -33,10 +33,15 @@ app.get("/styles.css", (_request, response) => response.sendFile("styles.css", {
 app.get("/script.js", (_request, response) => response.sendFile("script.js", { root: process.cwd() }));
 
 app.get("/api/health", (_request, response) => {
+  const supabaseUrlConfigured = Boolean(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const supabaseServiceRoleConfigured = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
   response.json({
     ok: true,
     storage: getStorageName(),
     baseUrl: publicBaseUrl,
+    supabaseUrlConfigured,
+    supabaseServiceRoleConfigured,
   });
 });
 
