@@ -45,11 +45,16 @@ const timelineDetail = document.querySelector("[data-timeline-detail]");
 const form = document.querySelector("[data-form]");
 const formStatus = document.querySelector("[data-form-status]");
 const submitButton = document.querySelector("[data-submit-button]");
+const phoneInput = form.querySelector('input[name="telefone"]');
 const hero = document.querySelector(".hero");
 const floatCard = document.querySelector("[data-float-card]");
 const scrollProgress = document.querySelector("[data-scroll-progress]");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let smoothScrollTarget = window.scrollY;
+
+phoneInput.addEventListener("input", () => {
+  phoneInput.value = formatPhone(phoneInput.value);
+});
 
 function setHeaderState() {
   header.classList.toggle("scrolled", window.scrollY > 24);
@@ -211,9 +216,10 @@ form.addEventListener("submit", async (event) => {
       ].join("\n"),
     );
 
+    const message = error instanceof Error ? error.message : "Não foi possível enviar a inscrição.";
     setFormState(
       "error",
-      `Servidor indisponível agora. <a href="mailto:?subject=${subject}&body=${body}">Enviar por e-mail</a>`,
+      `${message} <a href="mailto:?subject=${subject}&body=${body}">Enviar por e-mail</a>`,
     );
     console.warn(error);
   }
@@ -224,6 +230,19 @@ function setFormState(type, message) {
   formStatus.innerHTML = message;
   submitButton.disabled = type === "sending";
   submitButton.textContent = type === "sending" ? "Enviando..." : "Enviar inscrição";
+}
+
+function formatPhone(value) {
+  const digits = String(value).replace(/\D/g, "").slice(0, 11);
+  if (!digits) return "";
+  if (digits.length <= 2) return `(${digits}`;
+
+  const ddd = digits.slice(0, 2);
+  const number = digits.slice(2);
+  if (number.length <= 4) return `(${ddd}) ${number}`;
+
+  const firstPartLength = digits.length > 10 ? 5 : 4;
+  return `(${ddd}) ${number.slice(0, firstPartLength)}-${number.slice(firstPartLength)}`;
 }
 
 const revealObserver = new IntersectionObserver(

@@ -273,7 +273,7 @@
           <p class="section-kicker">Inscrições abertas</p>
           <h2 id="nominate-title">Conhece alguém que merece esse reconhecimento?</h2>
           <p>
-            Registre a inscrição ou indicação com nome, categoria e motivo. A submissão fica
+            Registre a inscrição ou indicação com nome e categoria. A justificativa é opcional, e a submissão fica
             pronta para ser encaminhada à equipe avaliadora.
           </p>
         </div>
@@ -303,7 +303,14 @@
           </label>
           <label>
             Telefone
-            <input name="telefone" type="tel" placeholder="(53) 99999-9999" />
+            <input
+              name="telefone"
+              type="tel"
+              inputmode="numeric"
+              autocomplete="tel"
+              maxlength="15"
+              placeholder="(53) 99999-9999"
+            />
           </label>
           <label>
             Instituição
@@ -314,12 +321,11 @@
             <input name="cidade" type="text" placeholder="Bagé e Região da Campanha" />
           </label>
           <label class="wide">
-            Por que essa pessoa ou projeto deve ser reconhecido?
+            Por que essa pessoa ou projeto deve ser reconhecido? (opcional)
             <textarea
               name="motivo"
               rows="5"
               placeholder="Conte sobre impacto, trajetória, inovação ou inclusão..."
-              required
             ></textarea>
           </label>
           <button class="button primary wide" type="submit" data-submit-button>Enviar inscrição</button>

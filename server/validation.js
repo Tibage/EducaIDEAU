@@ -12,7 +12,7 @@ export function validateIndication(input) {
   validateText(errors, data.nome, "nome", "Nome do inscrito ou indicado", 3, 120);
   validateText(errors, data.categoria, "categoria", "Categoria", 3, 80);
   validateText(errors, data.autor, "autor", "Seu nome", 3, 120);
-  validateText(errors, data.motivo, "motivo", "Motivo", 40, 1800);
+  validateOptionalText(errors, data.motivo, "motivo", "Motivo", 1800);
 
   if (data.categoria && !categories.has(String(data.categoria))) {
     errors.categoria = "Selecione uma categoria válida.";
@@ -46,7 +46,7 @@ export function normalizeIndication(input, meta) {
     autor_telefone: cleanPhone(input.telefone || ""),
     instituicao: cleanText(input.instituicao || ""),
     cidade: cleanText(input.cidade || "Bagé e Região da Campanha"),
-    motivo: cleanText(input.motivo),
+    motivo: cleanText(input.motivo || ""),
     ip_hash: meta.ipHash,
     user_agent: cleanText(meta.userAgent || "").slice(0, 300),
   };
@@ -58,6 +58,13 @@ function validateText(errors, value, key, label, min, max) {
     errors[key] = `${label} precisa ter pelo menos ${min} caracteres.`;
     return;
   }
+  if (text.length > max) {
+    errors[key] = `${label} pode ter no máximo ${max} caracteres.`;
+  }
+}
+
+function validateOptionalText(errors, value, key, label, max) {
+  const text = cleanText(value || "");
   if (text.length > max) {
     errors[key] = `${label} pode ter no máximo ${max} caracteres.`;
   }

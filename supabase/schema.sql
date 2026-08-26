@@ -28,7 +28,7 @@ create table if not exists indicacoes (
   ),
   constraint indicacoes_nome_len_check check (char_length(trim(nome_indicado)) between 3 and 120),
   constraint indicacoes_autor_len_check check (char_length(trim(autor_nome)) between 3 and 120),
-  constraint indicacoes_motivo_len_check check (char_length(trim(motivo)) between 40 and 1800),
+  constraint indicacoes_motivo_len_check check (char_length(trim(motivo)) <= 1800),
   constraint indicacoes_email_check check (
     autor_email is null
     or autor_email = ''
@@ -43,6 +43,10 @@ create index if not exists indicacoes_cidade_idx on indicacoes (cidade);
 create index if not exists indicacoes_busca_idx on indicacoes using gin (
   to_tsvector('portuguese', nome_indicado || ' ' || autor_nome || ' ' || coalesce(instituicao, '') || ' ' || motivo)
 );
+
+alter table indicacoes drop constraint if exists indicacoes_motivo_len_check;
+alter table indicacoes add constraint indicacoes_motivo_len_check
+  check (char_length(trim(motivo)) <= 1800);
 
 create or replace function set_updated_at()
 returns trigger as $$

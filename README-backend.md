@@ -1,6 +1,6 @@
 # Backend do Prêmio IDEAU
 
-Backend Node/Express para receber inscrições da LP e gravar no Neon/PostgreSQL quando `DATABASE_URL` estiver configurado.
+Backend Node/Express para receber inscrições da LP e gravar no Supabase quando as credenciais estiverem configuradas.
 
 ## Rodar local
 
@@ -14,20 +14,22 @@ Abra `http://localhost:3000`.
 
 Sem `DATABASE_URL`, as inscrições ficam em `data/indicacoes.json`.
 
-## Neon
+## Supabase
 
-1. Crie um projeto no Neon.
-2. Copie a connection string do banco.
-3. Rode o SQL em `neon/schema.sql` no SQL Editor do Neon.
+1. Crie um projeto no Supabase.
+2. Em **Settings > API**, copie a URL do projeto e a `service_role` key.
+3. Rode o SQL em `supabase/schema.sql` no SQL Editor do Supabase.
 3. Preencha no `.env`:
 
 ```env
-DATABASE_URL=postgresql://usuario:senha@host.neon.tech/database?sslmode=require
+NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_sua-chave-publica
+SUPABASE_SERVICE_ROLE_KEY=sua-chave-service-role
 DATABASE_INDICACOES_TABLE=indicacoes
 ADMIN_TOKEN=um-token-forte
 ```
 
-Use a `DATABASE_URL` somente no backend. Nunca coloque essa string no frontend.
+Use `SUPABASE_SERVICE_ROLE_KEY` somente no backend. Nunca a coloque no frontend.
 
 ## Rotas
 

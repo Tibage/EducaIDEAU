@@ -6,6 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { JsonFallbackStore } from "./jsonFallbackStore.js";
 import { PostgresStore } from "./postgresStore.js";
+import { SupabaseStore } from "./supabaseStore.js";
 import { validateIndication, normalizeIndication } from "./validation.js";
 
 const app = express();
@@ -14,7 +15,7 @@ const tableName = process.env.DATABASE_INDICACOES_TABLE || "indicacoes";
 const publicBaseUrl = process.env.PUBLIC_BASE_URL || `http://localhost:${port}`;
 const adminToken = process.env.ADMIN_TOKEN || "";
 const localStore = new JsonFallbackStore("data/indicacoes.json");
-const postgresStore = createPostgresStore();
+const databaseStore = createDatabaseStore();
 const rateLimitBucket = new Map();
 
 app.set("trust proxy", 1);
@@ -32,7 +33,7 @@ app.get("/script.js", (_request, response) => response.sendFile("script.js", { r
 app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
-    storage: postgresStore ? "neon-postgres" : "local-json",
+    storage: getStorageName(),
     baseUrl: publicBaseUrl,
   });
 });
@@ -68,7 +69,7 @@ app.post("/api/indicacoes", async (request, response, next) => {
       ok: true,
       id: saved.id,
       status: saved.status,
-      storage: postgresStore ? "neon-postgres" : "local-json",
+      storage: getStorageName(),
       message: "Inscrição recebida com sucesso.",
     });
   } catch (error) {
@@ -128,15 +129,28 @@ app.use((error, _request, response, _next) => {
 
 app.listen(port, () => {
   console.log(`Prêmio IDEAU rodando em ${publicBaseUrl}`);
-  console.log(`Persistência: ${postgresStore ? "Neon/Postgres" : "JSON local"}`);
+  console.log(`Persistência: ${getStorageName()}`);
 });
 
-function createPostgresStore() {
+function createDatabaseStore() {
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return new SupabaseStore({
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      tableName,
+    });
+  }
+
   if (!process.env.DATABASE_URL) return null;
   return new PostgresStore({
     connectionString: process.env.DATABASE_URL,
     tableName,
   });
+}
+
+function getStorageName() {
+  if (!databaseStore) return "local-json";
+  return databaseStore instanceof SupabaseStore ? "supabase-api" : "supabase-postgres";
 }
 
 function resolveCorsOrigin() {
@@ -179,18 +193,18 @@ function hashIp(ip) {
 }
 
 async function saveIndication(indication) {
-  if (!postgresStore) return localStore.insert(indication);
-  return postgresStore.insert(indication);
+  if (!databaseStore) return localStore.insert(indication);
+  return databaseStore.insert(indication);
 }
 
 async function listIndications(status) {
-  if (!postgresStore) return localStore.list(status);
-  return postgresStore.list(status);
+  if (!databaseStore) return localStore.list(status);
+  return databaseStore.list(status);
 }
 
 async function updateIndicationStatus(id, status) {
-  if (!postgresStore) return localStore.updateStatus(id, status);
-  return postgresStore.updateStatus(id, status);
+  if (!databaseStore) return localStore.updateStatus(id, status);
+  return databaseStore.updateStatus(id, status);
 }
 
 function toCsv(rows) {
