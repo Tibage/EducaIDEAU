@@ -1,5 +1,7 @@
 import "dotenv/config";
 import crypto from "node:crypto";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -127,10 +129,16 @@ app.use((error, _request, response, _next) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Prêmio IDEAU rodando em ${publicBaseUrl}`);
-  console.log(`Persistência: ${getStorageName()}`);
-});
+// Na Vercel o Express é executado pela função em api/[...path].js. Localmente,
+// este arquivo continua iniciando o servidor normalmente.
+const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  app.listen(port, () => {
+    console.log(`Prêmio IDEAU rodando em ${publicBaseUrl}`);
+    console.log(`Persistência: ${getStorageName()}`);
+  });
+}
 
 function createDatabaseStore() {
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -230,3 +238,5 @@ function csvCell(value) {
   const text = value == null ? "" : String(value);
   return `"${text.replaceAll('"', '""')}"`;
 }
+
+export default app;

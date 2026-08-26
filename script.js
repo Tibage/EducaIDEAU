@@ -190,7 +190,10 @@ form.addEventListener("submit", async (event) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    const result = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+    const result = contentType.includes("application/json")
+      ? await response.json()
+      : { ok: false, error: "O serviço de inscrições retornou uma resposta inválida." };
 
     if (!response.ok || !result.ok) {
       const details = result.fields ? Object.values(result.fields).join(" ") : result.error;
